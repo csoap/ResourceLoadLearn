@@ -69,7 +69,14 @@ public class BundleEditor{
         {
             SetABName(name, m_AllPrefabDir[name]);
         }
-
+        //清除AB包名
+        string[] oldABNames = AssetDatabase.GetAllAssetBundleNames();
+        for (int i = 0; i< oldABNames.Length; i++)
+        {
+            AssetDatabase.RemoveAssetBundleName(oldABNames[i], true);
+            EditorUtility.DisplayProgressBar("清除ab包名", "名字: " + oldABNames[i], i * 1.0f / oldABNames.Length); // 进度条
+        }
+        
         EditorUtility.ClearProgressBar(); //清掉进度条
         //BuildPipeline.BuildAssetBundles(Application.streamingAssetsPath, BuildAssetBundleOptions.ChunkBasedCompression, EditorUserBuildSettings.activeBuildTarget);
         //AssetDatabase.Refresh();
