@@ -38,7 +38,7 @@ public class DoubleLinkedList<T> where T : class, new()
     /// </summary>
     /// <param name="t"></param>
     /// <returns></returns>
-    public DoubleLinkedListNode<T> AddToHead(T t)
+    public DoubleLinkedListNode<T> AddToHeadr(T t)
     {
         DoubleLinkedListNode<T> pList = m_DoubleLinkNodePool.Spwan(true);
         pList.next = null;
@@ -170,7 +170,25 @@ public class DoubleLinkedList<T> where T : class, new()
     }
 }
 
+
 public class CMapList<T> where T : class, new()
 {
     DoubleLinkedList<T> m_DLink = new DoubleLinkedList<T>();
+    Dictionary<T, DoubleLinkedListNode<T>> m_FindMap = new Dictionary<T, DoubleLinkedListNode<T>>();
+
+    /// <summary>
+    /// 插入一个节点到表头
+    /// </summary>
+    /// <param name="t"></param>
+    public void InsertToHead(T t)
+    {
+        DoubleLinkedListNode<T> node = null;
+        if (!m_FindMap.TryGetValue(t, out node) && node != null)
+        {
+            m_DLink.AddToHeadr(t);
+            return;
+        }
+        m_DLink.AddToHeadr(t);
+        m_FindMap.Add(t, m_DLink.Head);
+    }
 }
