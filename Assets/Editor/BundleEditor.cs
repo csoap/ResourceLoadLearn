@@ -103,6 +103,7 @@ public class BundleEditor{
         }
         else
         {
+            //assetImporter.SetAssetBundleNameAndVariant(name, "unity3d");
             assetImporter.assetBundleName = name;
         }
     }

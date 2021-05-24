@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ResourceManager : Singleton<ResourceManager> {
 
+    public bool m_LoadFromAssetBundle = false;
     //缓存使用的资源列表
     public Dictionary<uint, ResourceItem> m_AssetDic { get; set; } = new Dictionary<uint, ResourceItem>();
 
@@ -12,7 +13,59 @@ public class ResourceManager : Singleton<ResourceManager> {
     
     public T LoadResource<T> (string path) where T : UnityEngine.Object
     {
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+        uint crc = CRC32.GetCRC32(path);
+        ResourceItem item = GetCacheResourceItem(crc);
+        if (item != null)
+        {
+            return item.m_Obj as T;
+        }
+        //无缓存 则创建
+        T obj = null;
+#if UNITY_EDITOR
+        if (!m_LoadFromAssetBundle)
+        {
+            obj = LoadAssetByEditor<T>(path);
+            item = AssetBundleManager.Instance.FindResourceItem(crc);
+        }
+#endif
+        if (obj == null)
+        {
+            item = AssetBundleManager.Instance.LoadResourceAssetsBundle(crc);
+            if (item != null && item.m_AssetBundle != null)
+            {
+                obj = item.m_AssetBundle.LoadAsset<T>(item.m_AssetName);
+            }
+        }
+        return obj;
+    }
 
+#if UNITY_EDITOR
+    protected T LoadAssetByEditor<T>(string path) where T : UnityEngine.Object
+    {
+        return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(path);
+    }
+#endif
+
+    ResourceItem GetCacheResourceItem(uint crc, int addRefCount = 1)
+    {
+        ResourceItem item = null;
+        if (m_AssetDic.TryGetValue(crc, out item))
+        {
+            if (item != null)
+            {
+                item.RefCount += addRefCount;
+                item.m_LastUseTIme = Time.realtimeSinceStartup;
+                //if (item.RefCount <= 1)
+                //{
+                //    m_NoRefrenceAssetMapList.Remove(item); // 理论上不会进来这里，做容错判断
+                //}
+            }
+        }
+        return item;
     }
 }
 
